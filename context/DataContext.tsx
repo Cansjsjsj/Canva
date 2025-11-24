@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import type { GuestData, DataContextType } from '../types';
 import * as guestApi from '../api/guestApi';
@@ -26,7 +27,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     loadData();
   }, []);
 
-  const addGuestData = async (data: { field1: string; field2: string }) => {
+  const addGuestData = async (data: { field1: string; field2: string; }) => {
     try {
       const newData = await guestApi.addGuestData(data);
       // Add the new data to the top of the list for immediate UI feedback

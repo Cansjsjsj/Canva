@@ -1,3 +1,4 @@
+
 import type { GuestData } from '../types';
 
 // --- Supabase Configuration ---
@@ -47,14 +48,19 @@ export const getGuestData = async (): Promise<GuestData[]> => {
 /**
  * Adds a new guest entry to the Supabase server.
  */
-export const addGuestData = async (data: { field1: string; field2: string }): Promise<GuestData> => {
+export const addGuestData = async (data: { field1: string; field2: string; }): Promise<GuestData> => {
+    const payload = {
+        field1: data.field1,
+        field2: data.field2
+    };
+
     const response = await fetch(`${SUPABASE_URL}/rest/v1/guests`, {
     method: 'POST',
     headers: {
         ...headers,
         'Prefer': 'return=representation' // Asks Supabase to return the newly created row
     },
-    body: JSON.stringify(data)
+    body: JSON.stringify(payload)
   });
 
   if (!response.ok) {
